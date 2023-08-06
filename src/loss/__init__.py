@@ -9,6 +9,7 @@ import numpy as np
 
 import torch
 import torch.nn as nn
+import torch.nn.parallel as P
 import torch.nn.functional as F
 
 class Loss(nn.modules.loss._Loss):
@@ -25,6 +26,9 @@ class Loss(nn.modules.loss._Loss):
                 loss_function = nn.MSELoss()
             elif loss_type == 'L1':
                 loss_function = nn.L1Loss()
+            elif loss_type == 'LRGBL1':
+                module = import_module('loss.lrgb')
+                loss_function = module.instantiate({}, {})
             elif loss_type.find('VGG') >= 0:
                 module = import_module('loss.vgg')
                 loss_function = getattr(module, 'VGG')(
@@ -41,8 +45,8 @@ class Loss(nn.modules.loss._Loss):
             self.loss.append({
                 'type': loss_type,
                 'weight': float(weight),
-                'function': loss_function}
-            )
+                'function': loss_function
+            })
             if loss_type.find('GAN') >= 0:
                 self.loss.append({'type': 'DIS', 'weight': 1, 'function': None})
 
@@ -59,10 +63,10 @@ class Loss(nn.modules.loss._Loss):
         device = torch.device('cpu' if args.cpu else 'cuda')
         self.loss_module.to(device)
         if args.precision == 'half': self.loss_module.half()
-        if not args.cpu and args.n_GPUs > 1:
-            self.loss_module = nn.DataParallel(
-                self.loss_module, range(args.n_GPUs)
-            )
+        #  if not args.cpu and args.n_GPUs > 1:
+        #      self.loss_module = nn.DataParallel(
+        #          self.loss_module, range(args.n_GPUs)
+        #      )
 
         if args.load != '': self.load(ckp.dir, cpu=args.cpu)
 
@@ -70,7 +74,11 @@ class Loss(nn.modules.loss._Loss):
         losses = []
         for i, l in enumerate(self.loss):
             if l['function'] is not None:
-                loss = l['function'](sr, hr)
+                #  loss = l['function'](sr, hr)
+                if self.n_GPUs > 1:
+                    loss = P.data_parallel(l['function'], (sr, hr), range(self.n_GPUs)).mean()
+                else:
+                    loss = l['function'](sr, hr)
                 effective_loss = l['weight'] * loss
                 losses.append(effective_loss)
                 self.log[-1, i] += effective_loss.item()
@@ -117,10 +125,11 @@ class Loss(nn.modules.loss._Loss):
             plt.close(fig)
 
     def get_loss_module(self):
-        if self.n_GPUs == 1:
-            return self.loss_module
-        else:
-            return self.loss_module.module
+        return self.loss_module
+        #  if self.n_GPUs == 1:
+        #      return self.loss_module
+        #  else:
+        #      return self.loss_module.module
 
     def save(self, apath):
         torch.save(self.state_dict(), os.path.join(apath, 'loss.pt'))

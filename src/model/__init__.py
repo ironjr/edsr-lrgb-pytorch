@@ -88,7 +88,8 @@ class Model(nn.Module):
 
         if resume == -1:
             load_from = torch.load(
-                os.path.join(apath, 'model_latest.pt'),
+                #  os.path.join(apath, 'model_latest.pt'),
+                os.path.join(apath, 'model_best.pt'),
                 **kwargs
             )
         elif resume == 0:

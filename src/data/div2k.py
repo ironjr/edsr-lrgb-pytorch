@@ -26,7 +26,8 @@ class DIV2K(srdata.SRData):
 
     def _set_filesystem(self, dir_data):
         super(DIV2K, self)._set_filesystem(dir_data)
-        self.dir_hr = os.path.join(self.apath, 'DIV2K_train_HR')
-        self.dir_lr = os.path.join(self.apath, 'DIV2K_train_LR_bicubic')
+        split = self.split if self.split == 'train' else 'valid'
+        self.dir_hr = os.path.join(self.apath, f'DIV2K_{split}_HR')
+        self.dir_lr = os.path.join(self.apath, f'DIV2K_{split}_LR_bicubic')
         if self.input_large: self.dir_lr += 'L'
 

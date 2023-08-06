@@ -39,7 +39,7 @@ class Trainer():
         timer_data, timer_model = utility.timer(), utility.timer()
         # TEMP
         self.loader_train.dataset.set_scale(0)
-        for batch, (lr, hr, _,) in enumerate(self.loader_train):
+        for batch, (lr, hr, _,) in enumerate(pbar := tqdm(self.loader_train, ncols=80)):
             lr, hr = self.prepare(lr, hr)
             timer_data.hold()
             timer_model.tic()
@@ -63,7 +63,7 @@ class Trainer():
                     len(self.loader_train.dataset),
                     self.loss.display_loss(batch),
                     timer_model.release(),
-                    timer_data.release()))
+                    timer_data.release()), write_fn = tqdm.write)
 
             timer_data.tic()
 
