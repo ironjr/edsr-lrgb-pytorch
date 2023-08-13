@@ -51,8 +51,8 @@ class Decoder(nn.Module):
     def __init__(self,):
         super(Decoder, self).__init__()
         self.conv_stack = nn.Sequential(
-            nn.Conv2d(128, 64, kernel_size=1, stride=1, padding=0),
-            nn.Conv2d(64, 32, kernel_size=1, stride=1, padding=0),
+            nn.Conv2d(128, 64, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Conv2d(64, 32, kernel_size=1, stride=1, padding=0, bias=False),
             nn.Conv2d(32, 3, kernel_size=1, stride=1, padding=0)
         )
     def forward(self, x):

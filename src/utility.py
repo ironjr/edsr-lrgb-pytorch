@@ -237,3 +237,14 @@ def make_optimizer(args, target):
     optimizer._register_scheduler(scheduler_class, **kwargs_scheduler)
     return optimizer
 
+
+def get_device(device='auto'):
+    if device == 'auto':
+        if cuda.is_available():
+            device = torch.device('cuda')
+        else:
+            device = torch.device('cpu')
+    else:
+        device = torch.device(device)
+
+    return device

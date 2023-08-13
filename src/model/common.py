@@ -86,3 +86,26 @@ class Upsampler(nn.Sequential):
 
         super(Upsampler, self).__init__(*m)
 
+
+class UpsamplerI(nn.Module):
+    '''
+    Interpolation based upsampler
+    '''
+
+    def __init__(
+            self, scale, n_feats, algorithm='nearest', conv=default_conv):
+
+        super(UpsamplerI, self).__init__()
+        log_scale = int(math.log(scale, 2))
+        self.algorithm = algorithm
+        self.convs = nn.ModuleList([
+            conv(n_feats, n_feats, 3) for _ in range(log_scale)
+        ])
+
+    def forward(self, x):
+        for conv in self.convs:
+            x = F.interpolate(x, scale_factor=2, mode=self.algorithm)
+            x = conv(x)
+            x = F.leaky_relu(x, negative_slope=0.2, inplace=True)
+
+        return x
