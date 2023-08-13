@@ -60,6 +60,9 @@ class LRGBLoss(nn.Module):
 def instantiate(opt: dict, loss_opt: dict):
     kwargs = {
         'checkpoint': '../../lrgb_pretrained/FINAL/idf8_ndb-lbl2-lr5e-4-coslr1k-c20/model/model_latest.pt',
+        #  'checkpoint': '../pretrained/model_latest.pt',
+        #  'checkpoint': '../../LRGB/experiment/div2k_long/model/model_latest.pt',
+        #  'checkpoint': '../../LRGB/experiment/div2k_long/model/model_latest.pt',
         'loss_type': 'l1',
         'remap': None,
     }

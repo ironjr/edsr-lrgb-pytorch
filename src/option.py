@@ -131,6 +131,8 @@ parser.add_argument('--loss', type=str, default='1*LRGBL1',
                     help='loss function configuration')
 parser.add_argument('--skip_threshold', type=float, default='1e8',
                     help='skipping batch that has large error')
+parser.add_argument('--lrgb_ckpt', type=str, default='../pretrained/model_latest.pt',
+                    help='pretrained autoencoder weight of lrgb loss')
 
 # Log specifications
 parser.add_argument('--save', type=str, default='test',
