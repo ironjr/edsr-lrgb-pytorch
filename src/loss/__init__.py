@@ -28,7 +28,14 @@ class Loss(nn.modules.loss._Loss):
                 loss_function = nn.L1Loss()
             elif loss_type == 'LRGBL1':
                 module = import_module('loss.lrgb')
-                loss_function = module.instantiate({}, {})
+                loss_function = module.instantiate(
+                    {},
+                    {
+                        'checkpoint': args.lrgb_ckpt,
+                        'num_experts': args.lrgb_n_experts,
+                        'use_legacy': args.lrgb_use_legacy,
+                    }
+                )
             elif loss_type.find('VGG') >= 0:
                 module = import_module('loss.vgg')
                 loss_function = getattr(module, 'VGG')(

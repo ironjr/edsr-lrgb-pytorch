@@ -45,28 +45,30 @@ class Encoder(nn.Module):
             
     def forward(self, x):
         out = self.conv_stack(x)
-        return out # + torch.randn_like(out)
+        return out
+
 
 class Decoder(nn.Module):
-    def __init__(self,):
+    def __init__(self, use_legacy=False):
         super(Decoder, self).__init__()
         self.conv_stack = nn.Sequential(
-            nn.Conv2d(128, 64, kernel_size=1, stride=1, padding=0, bias=False),
-            nn.Conv2d(64, 32, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.Conv2d(128, 64, kernel_size=1, stride=1, padding=0, bias=use_legacy),
+            nn.Conv2d(64, 32, kernel_size=1, stride=1, padding=0, bias=use_legacy),
             nn.Conv2d(32, 3, kernel_size=1, stride=1, padding=0)
         )
     def forward(self, x):
         return self.conv_stack(x)
 
+
 class AutoEncoder(nn.Module):
-    def __init__(self, num_classes=20):
+    def __init__(self, num_classes=20, use_legacy=False):
         super(AutoEncoder, self).__init__()
         self.num_classes = num_classes
         self.classification = Classification(self.num_classes)
         self.encoder = nn.ModuleList()
         for i in range(self.num_classes):
             self.encoder.append(Encoder())
-        self.decoder = Decoder()
+        self.decoder = Decoder(use_legacy)
         self.L1 = nn.L1Loss()
 
     def top1(self, t):
@@ -105,7 +107,8 @@ class AutoEncoder(nn.Module):
         L1 loss is calculated in the outside of the model.
         """
         emb, classes = self.encode(x, True)
-        out = self.decode(emb + torch.randn_like(emb))
+        emb = emb + torch.randn_like(emb)
+        out = self.decode(emb)
         
         load_balancing_loss = self.load_balancing_loss(classes)
         return out, load_balancing_loss * loss_weight

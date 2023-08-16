@@ -10,13 +10,16 @@ class LRGBLoss(nn.Module):
         self,
         checkpoint: str,
         loss_type: str = 'L1',
+        num_experts: int = 20,
+        use_legacy: bool = False,
         remap: dict = None,
     ) -> None:
         super(LRGBLoss, self).__init__()
         self.loss_type = loss_type.lower()
         self.remap = remap
 
-        self.encoder = AutoEncoder()
+        self.encoder = AutoEncoder(num_experts, use_legacy)
+        print(f'Loading LRGB weight from {checkpoint}.')
         self.encoder.load_state_dict(torch.load(checkpoint))
         for p in self.parameters():
             p.requires_grad = False
@@ -60,9 +63,8 @@ class LRGBLoss(nn.Module):
 def instantiate(opt: dict, loss_opt: dict):
     kwargs = {
         'checkpoint': '../../lrgb_pretrained/FINAL/idf8_ndb-lbl2-lr5e-4-coslr1k-c20/model/model_latest.pt',
-        #  'checkpoint': '../pretrained/model_latest.pt',
-        #  'checkpoint': '../../LRGB/experiment/div2k_long/model/model_latest.pt',
-        #  'checkpoint': '../../LRGB/experiment/div2k_long/model/model_latest.pt',
+        'num_experts': 20,
+        'use_legacy': False,
         'loss_type': 'l1',
         'remap': None,
     }
